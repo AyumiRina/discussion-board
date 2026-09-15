@@ -527,6 +527,7 @@ function TopicCard({
   onReplyReaction: (replyId: string, emoji: ReactionEmoji) => void;
 }) {
   const isOwner = currentProfile?.id === topic.author.id;
+  const needsReply = !topic.deletedAt && !topic.replies.some((reply) => reply.author.id === currentProfile?.id);
   const [visibleReplyCount, setVisibleReplyCount] = useState(20);
   const visibleReplies = topic.replies.slice(0, visibleReplyCount);
 
@@ -610,7 +611,10 @@ function TopicCard({
         </form>
       ) : (
         <>
-          <h2 className="topic-title">{topic.title}</h2>
+          <div className="topic-title-row">
+            <h2 className="topic-title">{topic.title}</h2>
+            {needsReply ? <span className="new-topic-badge">New!</span> : null}
+          </div>
           {topic.context ? <p className="topic-context">{topic.context}</p> : null}
         </>
       )}
@@ -1124,7 +1128,7 @@ export default function DiscussionBoard() {
       <div className="mobile-topbar">
         <button type="button" className="mobile-brand" onClick={() => setMobileMenuOpen((open) => !open)} aria-expanded={mobileMenuOpen}>
           <span className="brand-mark small" aria-hidden="true"><Feather size={16} /></span>
-          <span>Emblem Hall</span>
+          <span>Emblem Tavern</span>
         </button>
         <div className="mobile-top-actions">
           <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
@@ -1144,8 +1148,8 @@ export default function DiscussionBoard() {
           <div className="brand-lockup">
             <span className="brand-mark" aria-hidden="true"><Feather size={19} /></span>
             <div>
-              <span className="brand-name">Emblem Hall</span>
-              <span className="brand-kicker">A daily campfire for tacticians</span>
+              <span className="brand-name">Emblem Tavern</span>
+              <span className="brand-kicker">A tavern for adventurers</span>
             </div>
           </div>
           <nav className="rail-nav" aria-label="Board navigation">

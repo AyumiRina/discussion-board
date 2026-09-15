@@ -1,4 +1,4 @@
-# Emblem Hall
+# Emblem Tavern
 
 A modern, fantasy-inspired Fire Emblem discussion board built with Next.js App Router, TypeScript, Vinext, and Supabase.
 
