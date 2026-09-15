@@ -53,7 +53,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   AVATAR_OPTIONS,
-  DEMO_TOPICS,
   EMPTY_REACTIONS,
   REACTION_EMOJIS,
   type AvatarKey,
@@ -758,7 +757,7 @@ function ProfileMenu({ profile, onEdit, onInfo }: { profile: PublicProfile | nul
 }
 
 export default function DiscussionBoard() {
-  const [topics, setTopics] = useState<Topic[]>(DEMO_TOPICS);
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [connectionState, setConnectionState] = useState<"demo" | "connecting" | "live">(hasSupabaseConfig ? "connecting" : "demo");
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -766,7 +765,7 @@ export default function DiscussionBoard() {
   const [topicComposerOpen, setTopicComposerOpen] = useState(false);
   const [topicTitle, setTopicTitle] = useState("");
   const [topicContext, setTopicContext] = useState("");
-  const [expandedTopic, setExpandedTopic] = useState<string | null>(DEMO_TOPICS[0]?.id ?? null);
+  const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<EditingTarget>(null);
   const [editDraft, setEditDraft] = useState("");
