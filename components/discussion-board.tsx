@@ -445,7 +445,7 @@ function ReplyEditor({
           ) : null}
           <Button type="submit" size="sm" disabled={!value.trim()}>
             <Send size={14} />
-            Reply
+            Post reply
           </Button>
         </div>
       </div>
@@ -1215,7 +1215,7 @@ export default function DiscussionBoard() {
       </div>
 
       <div className={`mobile-nav ${mobileMenuOpen ? "is-open" : ""}`}>
-        <button type="button" className="mobile-nav-item is-active" onClick={() => setMobileMenuOpen(false)}><Beer size={16} /> Community board</button>
+        <button type="button" className="mobile-nav-item is-active" onClick={() => setMobileMenuOpen(false)}><Beer size={16} /> My community board</button>
       </div>
 
       <div className="board-layout">
@@ -1229,7 +1229,7 @@ export default function DiscussionBoard() {
           </div>
           <nav className="rail-nav" aria-label="Tavern navigation">
             <span className="rail-section-label">The tavern</span>
-            <button type="button" className="rail-link is-active"><Beer size={16} /> Community board <span className="rail-count">{topics.length}</span></button>
+            <button type="button" className="rail-link is-active"><Beer size={16} /> My community board <span className="rail-count">{topics.length}</span></button>
           </nav>
           <div className="rail-divider" />
           <div className="left-rail-profile">
@@ -1331,7 +1331,7 @@ export default function DiscussionBoard() {
             </Button>
           </div>
           <div className="right-rail-card personal-stats-card">
-            <div className="pulse-card-header"><span className="eyebrow">Your activity</span><MessageCircle size={16} aria-hidden="true" /></div>
+            <div className="pulse-card-header"><span className="eyebrow">My activity</span><MessageCircle size={16} aria-hidden="true" /></div>
             <div className="pulse-stat"><strong>{myDiscussionCount}</strong><span>my discussions</span></div>
             <div className="pulse-stat"><strong>{myReplyCount}</strong><span>my replies</span></div>
           </div>
