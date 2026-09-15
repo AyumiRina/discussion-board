@@ -1167,9 +1167,9 @@ export default function DiscussionBoard() {
         <section className="board-column" aria-labelledby="board-heading">
           <header className="board-header">
             <div className="board-heading-copy">
-              <p className="eyebrow"><span className="eyebrow-flare" /> Daily discussions</p>
-              <h1 id="board-heading">The campfire is open.</h1>
-              <p className="board-intro">Talk tactics, characters, stories, and the choices you still think about after the map ends.</p>
+              <p className="eyebrow"><span className="eyebrow-flare" /> Daily discussion topics</p>
+              <h1 id="board-heading">Tavern board</h1>
+              <p className="board-intro">Pin a discussion topic onto the board and check back daily to see what fellow adventurers have to say</p>
             </div>
             <div className="board-header-actions">
               <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
@@ -1181,7 +1181,7 @@ export default function DiscussionBoard() {
           </header>
 
           <div className="board-status-row">
-            <div className={`status-copy ${connectionState !== "live" ? "is-preview" : ""}`}><span className="live-pulse" /> <span>{connectionState === "live" ? "Live board" : connectionState === "connecting" ? "Connecting to the board" : "Camp preview"}</span><span className="status-dot-separator">·</span><span>{topics.length} discussions in the hall</span></div>
+            <div className={`status-copy ${connectionState !== "live" ? "is-preview" : ""}`} title={connectionState === "live" ? "Live shared board" : connectionState === "connecting" ? "Connecting to the shared board" : "Local camp preview"}><span className="live-pulse" /> <span>The tavern</span><span className="status-dot-separator">·</span><span>{topics.length} {topics.length === 1 ? "topic" : "topics"} pinned in the board</span></div>
             <span className="timezone-note">Times shown in your local time</span>
           </div>
 
