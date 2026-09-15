@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
   BookOpen,
   Check,
@@ -11,12 +11,14 @@ import {
   Flame,
   Menu,
   MessageCircle,
+  Moon,
   MoreHorizontal,
   PenLine,
   Plus,
   Send,
   Shield,
   Sparkles,
+  Sun,
   Trash2,
   Users,
 } from "lucide-react";
@@ -96,6 +98,53 @@ function createId(prefix: string) {
     return `${prefix}-${crypto.randomUUID()}`;
   }
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+type ThemePreference = "light" | "dark";
+const THEME_STORAGE_KEY = "emblem-hall-theme";
+let sessionThemePreference: ThemePreference | null = null;
+
+function readThemePreference(): ThemePreference | null {
+  if (sessionThemePreference) return sessionThemePreference;
+  try {
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return savedTheme === "dark" || savedTheme === "light" ? savedTheme : null;
+  } catch {
+    return null;
+  }
+}
+
+function getThemeSnapshot(): ThemePreference {
+  return readThemePreference() ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+}
+
+function subscribeToTheme(onStoreChange: () => void) {
+  const handleSystemThemeChange = () => {
+    if (!readThemePreference()) onStoreChange();
+  };
+  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  window.addEventListener("emblem-theme-change", onStoreChange);
+  window.addEventListener("storage", onStoreChange);
+  mediaQuery.addEventListener("change", handleSystemThemeChange);
+  return () => {
+    window.removeEventListener("emblem-theme-change", onStoreChange);
+    window.removeEventListener("storage", onStoreChange);
+    mediaQuery.removeEventListener("change", handleSystemThemeChange);
+  };
+}
+
+function getServerThemeSnapshot(): ThemePreference {
+  return "light";
+}
+
+function saveThemePreference(theme: ThemePreference) {
+  sessionThemePreference = theme;
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // Theme preference is a convenience; the board remains usable if storage is blocked.
+  }
+  window.dispatchEvent(new Event("emblem-theme-change"));
 }
 
 function buildReactions(values: ReactionSummary[], emoji: ReactionEmoji, active: boolean) {
@@ -529,7 +578,9 @@ function TopicCard({
   const isOwner = currentProfile?.id === topic.author.id;
   const needsReply = !topic.deletedAt && !topic.replies.some((reply) => reply.author.id === currentProfile?.id);
   const [visibleReplyCount, setVisibleReplyCount] = useState(20);
-  const visibleReplies = topic.replies.slice(0, visibleReplyCount);
+  const visibleReplies = [...topic.replies]
+    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+    .slice(0, visibleReplyCount);
 
   return (
     <article className={`topic-card ${topic.deletedAt ? "is-deleted" : ""}`} id={topic.id}>
@@ -625,7 +676,7 @@ function TopicCard({
             <ReactionBar reactions={topic.reactions} onToggle={onToggleReaction} />
             <button type="button" className={`reply-toggle ${expanded ? "is-expanded" : ""}`} onClick={onToggleExpanded} aria-expanded={expanded}>
               <MessageCircle size={16} />
-              <span>{topic.replyCount ? `${topic.replyCount} ${topic.replyCount === 1 ? "reply" : "replies"}` : "Be the first to reply"}</span>
+              <span>{topic.replyCount ? `${topic.replyCount} adventurer ${topic.replyCount === 1 ? "reply" : "replies"}` : "Be the first adventurer to reply"}</span>
               {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
             </button>
           </div>
@@ -634,7 +685,6 @@ function TopicCard({
             <div className="reply-thread">
               <div className="reply-thread-heading">
                 <span>Conversation</span>
-                <span className="reply-order">Oldest first</span>
               </div>
               {topic.replies.length ? (
                 <div className="replies-list">
@@ -670,6 +720,16 @@ function TopicCard({
         </>
       ) : null}
     </article>
+  );
+}
+
+function ThemeToggle({ darkMode, onToggle }: { darkMode: boolean; onToggle: () => void }) {
+  const label = darkMode ? "Switch to light mode" : "Switch to dark mode";
+  return (
+    <button type="button" className="theme-toggle" aria-label={label} aria-pressed={darkMode} title={label} onClick={onToggle}>
+      {darkMode ? <Sun size={15} aria-hidden="true" /> : <Moon size={15} aria-hidden="true" />}
+      <span className="theme-toggle-label">{darkMode ? "Light mode" : "Dark mode"}</span>
+    </button>
   );
 }
 
@@ -720,6 +780,13 @@ export default function DiscussionBoard() {
   const [hasMoreRemoteTopics, setHasMoreRemoteTopics] = useState(false);
   const [loadingMoreTopics, setLoadingMoreTopics] = useState(false);
   const [now] = useState(() => new Date());
+
+  const themePreference = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerThemeSnapshot);
+  const darkMode = themePreference === "dark";
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("theme-dark", darkMode);
+  }, [darkMode]);
 
   useEffect(() => {
     let disposed = false;
@@ -1131,6 +1198,7 @@ export default function DiscussionBoard() {
           <span>Emblem Tavern</span>
         </button>
         <div className="mobile-top-actions">
+          <ThemeToggle darkMode={darkMode} onToggle={() => saveThemePreference(darkMode ? "light" : "dark")} />
           <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
           <button type="button" className="icon-button mobile-menu-button" aria-label="Toggle navigation" onClick={() => setMobileMenuOpen((open) => !open)}>
             <Menu size={18} />
@@ -1159,6 +1227,7 @@ export default function DiscussionBoard() {
           <div className="left-rail-profile">
             <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
           </div>
+          <ThemeToggle darkMode={darkMode} onToggle={() => saveThemePreference(darkMode ? "light" : "dark")} />
         </aside>
 
         <section className="board-column" aria-labelledby="board-heading">
@@ -1250,7 +1319,7 @@ export default function DiscussionBoard() {
             <h2>Leave a little room for another voice.</h2>
             <p>Every topic is a small opening. Ask something you’d want to answer, too.</p>
             <Button className="prompt-button new-topic-button" onClick={() => setTopicComposerOpen(true)}>
-              <Plus size={15} /> Start a discussion
+              <Feather size={15} /> Add discussion topic
             </Button>
           </div>
           <div className="right-rail-card pulse-card">
