@@ -2,13 +2,12 @@
 
 import { FormEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
-  BookOpen,
+  Beer,
   Check,
   ChevronDown,
   ChevronUp,
   Clock3,
   Feather,
-  Flame,
   Menu,
   MessageCircle,
   Moon,
@@ -899,6 +898,15 @@ export default function DiscussionBoard() {
   }, [now, topics, visibleTopicCount]);
 
   const totalReplies = topics.reduce((sum, topic) => sum + topic.replyCount, 0);
+  const profileId = profile?.id ?? null;
+  const myDiscussionCount = useMemo(
+    () => profileId ? topics.filter((topic) => topic.author.id === profileId).length : 0,
+    [profileId, topics],
+  );
+  const myReplyCount = useMemo(
+    () => profileId ? topics.reduce((total, topic) => total + topic.replies.filter((reply) => reply.author.id === profileId).length, 0) : 0,
+    [profileId, topics],
+  );
 
   function showNotice(message: string) {
     setNotice(message);
@@ -1207,7 +1215,7 @@ export default function DiscussionBoard() {
       </div>
 
       <div className={`mobile-nav ${mobileMenuOpen ? "is-open" : ""}`}>
-        <button type="button" className="mobile-nav-item is-active" onClick={() => setMobileMenuOpen(false)}><BookOpen size={16} /> Daily board</button>
+        <button type="button" className="mobile-nav-item is-active" onClick={() => setMobileMenuOpen(false)}><Beer size={16} /> Community board</button>
       </div>
 
       <div className="board-layout">
@@ -1221,20 +1229,20 @@ export default function DiscussionBoard() {
           </div>
           <nav className="rail-nav" aria-label="Tavern navigation">
             <span className="rail-section-label">The tavern</span>
-            <button type="button" className="rail-link is-active"><BookOpen size={16} /> Daily board <span className="rail-count">{topics.length}</span></button>
+            <button type="button" className="rail-link is-active"><Beer size={16} /> Community board <span className="rail-count">{topics.length}</span></button>
           </nav>
           <div className="rail-divider" />
           <div className="left-rail-profile">
+            <ThemeToggle darkMode={darkMode} onToggle={() => saveThemePreference(darkMode ? "light" : "dark")} />
             <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
           </div>
-          <ThemeToggle darkMode={darkMode} onToggle={() => saveThemePreference(darkMode ? "light" : "dark")} />
         </aside>
 
         <section className="board-column" aria-labelledby="board-heading">
           <header className="board-header">
             <div className="board-heading-copy">
               <p className="eyebrow"><span className="eyebrow-flare" /> Daily discussion topics</p>
-              <h1 id="board-heading">Tavern board</h1>
+              <h1 id="board-heading"><Feather className="board-heading-icon" size={28} aria-hidden="true" /><span>Tavern board</span></h1>
               <p className="board-intro">Pin a discussion topic onto the board and check back daily to see what fellow adventurers have to say</p>
             </div>
             <div className="board-header-actions tablet-profile">
@@ -1314,7 +1322,8 @@ export default function DiscussionBoard() {
 
         <aside className="right-rail">
           <div className="right-rail-card prompt-card">
-            <div className="card-cardinal" aria-hidden="true"><Flame size={18} /></div>
+            <span className="prompt-card-watermark" aria-hidden="true"><MessageCircle size={82} fill="currentColor" strokeWidth={1.25} /></span>
+            <div className="card-cardinal" aria-hidden="true"><Feather size={18} /></div>
             <p className="eyebrow">At the campfire</p>
             <h2>Leave a little room for another voice.</h2>
             <p>Every topic is a small opening. Ask something you’d want to answer, too.</p>
@@ -1326,6 +1335,8 @@ export default function DiscussionBoard() {
             <div className="pulse-card-header"><span className="eyebrow">Community stats</span><Users size={16} aria-hidden="true" /></div>
             <div className="pulse-stat"><strong>{topics.length}</strong><span>open discussions</span></div>
             <div className="pulse-stat"><strong>{totalReplies}</strong><span>voices in the replies</span></div>
+            <div className="pulse-stat"><strong>{myDiscussionCount}</strong><span>my discussions</span></div>
+            <div className="pulse-stat"><strong>{myReplyCount}</strong><span>my replies</span></div>
           </div>
         </aside>
       </div>

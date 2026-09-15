@@ -282,7 +282,16 @@ textarea:focus-visible {
 
 .left-rail-profile {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
   justify-content: flex-start;
+  padding-left: 0;
+}
+
+.left-rail-profile .theme-toggle {
+  margin-top: 0;
+  padding-right: 3px;
   padding-left: 3px;
 }
 
@@ -364,6 +373,9 @@ textarea:focus-visible {
 }
 
 .board-heading-copy h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 17px 0 9px;
   color: #202a40;
   font-family: Georgia, "Times New Roman", serif;
@@ -371,6 +383,11 @@ textarea:focus-visible {
   font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 1.03;
+}
+
+.board-heading-icon {
+  flex: 0 0 auto;
+  color: #b94d3b;
 }
 
 .board-intro {
@@ -1140,21 +1157,27 @@ textarea:focus-visible {
 }
 
 .prompt-card::after {
-  content: "✦";
+  content: none;
+}
+
+.prompt-card-watermark {
   position: absolute;
-  top: -23px;
+  top: -20px;
   right: 7px;
+  z-index: 0;
   color: rgb(187 123 80 / 15%);
-  font-family: Georgia, serif;
-  font-size: 104px;
-  line-height: 1;
+  transform: rotate(-8deg);
+  pointer-events: none;
 }
 
 .card-cardinal {
   width: 33px;
   height: 33px;
   margin-bottom: 18px;
-  border-radius: 9px 9px 9px 3px;
+  border: 0;
+  border-radius: 50%;
+  color: #fff7ea;
+  background: #b94d3b;
 }
 
 .right-rail-card h2 {
@@ -1192,6 +1215,8 @@ textarea:focus-visible {
   border-color: #a94739;
   color: #fff;
   background: #b94d3b;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .prompt-button.new-topic-button:hover {
@@ -1720,6 +1745,21 @@ html.theme-dark {
   color: #f0f2f5;
 }
 
+.theme-dark .board-heading-icon {
+  color: #e27c60;
+}
+
+.theme-dark .author-name,
+.theme-dark .reply-author,
+.theme-dark .profile-menu-name,
+.theme-dark .rail-count {
+  color: #eef2f7;
+}
+
+.theme-dark .pulse-stat strong {
+  color: #f3f5f8;
+}
+
 .theme-dark .rail-link:hover,
 .theme-dark .mobile-nav-item:hover,
 .theme-dark .rail-link.is-active,
@@ -1858,6 +1898,12 @@ html.theme-dark {
   background: #332a2d;
 }
 
+.theme-dark .card-cardinal {
+  border-color: transparent;
+  color: #fff7ea;
+  background: #c6533e;
+}
+
 .theme-dark .menu-surface {
   border-color: #465264;
   background: #232b38;
@@ -1873,6 +1919,10 @@ html.theme-dark {
 }
 
 .theme-dark .prompt-card::after {
+  content: none;
+}
+
+.theme-dark .prompt-card-watermark {
   color: rgb(208 144 92 / 13%);
 }
 
