@@ -1158,10 +1158,6 @@ export default function DiscussionBoard() {
             <div className="rail-note-icon" aria-hidden="true"><Shield size={15} /></div>
             <p>Bring a question, a theory, or one perfectly timed critical hit.</p>
           </div>
-          <div className="rail-footer">
-            <span className="rail-live-dot" />
-            <span>Open to every tactician</span>
-          </div>
         </aside>
 
         <section className="board-column" aria-labelledby="board-heading">
@@ -1171,18 +1167,13 @@ export default function DiscussionBoard() {
               <h1 id="board-heading">Tavern board</h1>
               <p className="board-intro">Pin a discussion topic onto the board and check back daily to see what fellow adventurers have to say</p>
             </div>
-            <div className="board-header-actions">
+            <div className="board-header-actions tablet-profile">
               <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
-              <Button className="new-topic-button" onClick={() => setTopicComposerOpen((open) => !open)}>
-                <Plus size={17} />
-                <span>Start a discussion</span>
-              </Button>
             </div>
           </header>
 
           <div className="board-status-row">
             <div className={`status-copy ${connectionState !== "live" ? "is-preview" : ""}`} title={connectionState === "live" ? "Live shared board" : connectionState === "connecting" ? "Connecting to the shared board" : "Local camp preview"}><span className="live-pulse" /> <span>The tavern</span><span className="status-dot-separator">·</span><span>{topics.length} {topics.length === 1 ? "topic" : "topics"} pinned in the board</span></div>
-            <span className="timezone-note">Times shown in your local time</span>
           </div>
 
           {topicComposerOpen ? (
@@ -1252,20 +1243,22 @@ export default function DiscussionBoard() {
         </section>
 
         <aside className="right-rail">
+          <div className="right-rail-profile">
+            <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
+          </div>
           <div className="right-rail-card prompt-card">
             <div className="card-cardinal" aria-hidden="true"><Flame size={18} /></div>
             <p className="eyebrow">At the campfire</p>
             <h2>Leave a little room for another voice.</h2>
             <p>Every topic is a small opening. Ask something you’d want to answer, too.</p>
-            <Button variant="outline" className="prompt-button" onClick={() => { setTopicComposerOpen(true); setTopicTitle("What are you replaying right now?"); }}>
-              <PenLine size={15} /> Use a prompt
+            <Button className="prompt-button new-topic-button" onClick={() => setTopicComposerOpen(true)}>
+              <Plus size={15} /> Start a discussion
             </Button>
           </div>
           <div className="right-rail-card pulse-card">
-            <div className="pulse-card-header"><span className="eyebrow">Hall pulse</span><Sparkles size={16} /></div>
+            <div className="pulse-card-header"><span className="eyebrow">Community stats</span><Users size={16} aria-hidden="true" /></div>
             <div className="pulse-stat"><strong>{topics.length}</strong><span>open discussions</span></div>
             <div className="pulse-stat"><strong>{totalReplies}</strong><span>voices in the replies</span></div>
-            <div className="pulse-card-footer"><Users size={15} /><span>Make room at the table</span></div>
           </div>
           <div className="right-rail-caption"><span>✦</span><p>Original fantasy-inspired interface. Placeholder crests are ready for your assets.</p></div>
         </aside>

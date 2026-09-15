@@ -348,7 +348,7 @@ textarea:focus-visible {
 }
 
 .board-header-actions {
-  display: flex;
+  display: none;
   align-items: flex-end;
   flex-direction: column;
   gap: 18px;
@@ -1051,7 +1051,14 @@ textarea:focus-visible {
   display: grid;
   align-content: start;
   gap: 15px;
-  padding-top: 78px;
+  padding-top: 15px;
+}
+
+.right-rail-profile {
+  display: flex;
+  min-height: 33px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .right-rail-card {
@@ -1114,6 +1121,17 @@ textarea:focus-visible {
   color: #9b503f;
   background: rgb(255 250 241 / 75%);
   font-size: 12px;
+}
+
+.prompt-button.new-topic-button {
+  border-color: #a94739;
+  color: #fff;
+  background: #b94d3b;
+}
+
+.prompt-button.new-topic-button:hover {
+  border-color: #a94235;
+  background: #a94235;
 }
 
 .pulse-card-header {
@@ -1375,6 +1393,10 @@ textarea:focus-visible {
 
   .right-rail {
     display: none;
+  }
+
+  .board-header-actions {
+    display: flex;
   }
 }
 
