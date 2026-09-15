@@ -77,13 +77,13 @@ export async function ensureAnonymousSession(client: SupabaseClient) {
   return result.data.session;
 }
 
-export async function loadRemoteBoard(client: SupabaseClient, currentUserId: string | null): Promise<Topic[]> {
+export async function loadRemoteBoard(client: SupabaseClient, currentUserId: string | null, topicPage = 0): Promise<Topic[]> {
+  const from = Math.max(0, topicPage) * 20;
   const topicsResult = await client
     .from("topics")
     .select("id, author_id, title, context, created_at, updated_at, deleted_at")
-    .is("deleted_at", null)
     .order("created_at", { ascending: false })
-    .range(0, 19);
+    .range(from, from + 19);
   if (topicsResult.error) throw topicsResult.error;
 
   const topicRows = (topicsResult.data ?? []) as TopicRow[];
@@ -94,7 +94,6 @@ export async function loadRemoteBoard(client: SupabaseClient, currentUserId: str
     .from("replies")
     .select("id, topic_id, author_id, body, created_at, updated_at, deleted_at")
     .in("topic_id", topicIds)
-    .is("deleted_at", null)
     .order("created_at", { ascending: true });
   if (repliesResult.error) throw repliesResult.error;
 

@@ -110,6 +110,21 @@ function buildReactions(values: ReactionSummary[], emoji: ReactionEmoji, active:
   );
 }
 
+function updateReactionState(topics: Topic[], targetType: "topic" | "reply", targetId: string, emoji: ReactionEmoji, active: boolean) {
+  return topics.map((topic) => {
+    if (targetType === "topic" && topic.id === targetId) {
+      return { ...topic, reactions: buildReactions(topic.reactions, emoji, active) };
+    }
+    if (targetType === "reply" && topic.replies.some((reply) => reply.id === targetId)) {
+      return {
+        ...topic,
+        replies: topic.replies.map((reply) => reply.id === targetId ? { ...reply, reactions: buildReactions(reply.reactions, emoji, active) } : reply),
+      };
+    }
+    return topic;
+  });
+}
+
 function AvatarMark({ profile, size = "default" }: { profile: PublicProfile; size?: "sm" | "default" | "lg" }) {
   const option = getAvatarOption(profile.avatarKey);
   return (
@@ -121,7 +136,7 @@ function AvatarMark({ profile, size = "default" }: { profile: PublicProfile; siz
 
 function Timestamp({ timestamp, className = "" }: { timestamp: string; className?: string }) {
   return (
-    <time className={className} dateTime={timestamp} title={formatExactTime(timestamp)}>
+    <time className={className} dateTime={timestamp} title={formatExactTime(timestamp)} aria-label={`Posted ${formatExactTime(timestamp)}`}>
       {formatRelativeTime(timestamp)}
     </time>
   );
@@ -512,6 +527,8 @@ function TopicCard({
   onReplyReaction: (replyId: string, emoji: ReactionEmoji) => void;
 }) {
   const isOwner = currentProfile?.id === topic.author.id;
+  const [visibleReplyCount, setVisibleReplyCount] = useState(20);
+  const visibleReplies = topic.replies.slice(0, visibleReplyCount);
 
   return (
     <article className={`topic-card ${topic.deletedAt ? "is-deleted" : ""}`} id={topic.id}>
@@ -617,7 +634,7 @@ function TopicCard({
               </div>
               {topic.replies.length ? (
                 <div className="replies-list">
-                  {topic.replies.map((reply) => (
+                  {visibleReplies.map((reply) => (
                     <ReplyItem
                       key={reply.id}
                       reply={reply}
@@ -631,6 +648,11 @@ function TopicCard({
                       onToggleReaction={(emoji) => onReplyReaction(reply.id, emoji)}
                     />
                   ))}
+                  {visibleReplyCount < topic.replies.length ? (
+                    <button type="button" className="load-replies-button" onClick={() => setVisibleReplyCount((count) => count + 20)}>
+                      Load older replies <span aria-hidden="true">↓</span>
+                    </button>
+                  ) : null}
                 </div>
               ) : (
                 <div className="empty-replies">
@@ -690,15 +712,25 @@ export default function DiscussionBoard() {
   const [notice, setNotice] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [visibleTopicCount, setVisibleTopicCount] = useState(20);
+  const [remoteTopicPage, setRemoteTopicPage] = useState(0);
+  const [hasMoreRemoteTopics, setHasMoreRemoteTopics] = useState(false);
+  const [loadingMoreTopics, setLoadingMoreTopics] = useState(false);
   const [now] = useState(() => new Date());
 
   useEffect(() => {
-    try {
-      const savedProfile = window.localStorage.getItem("emblem-hall-profile");
-      if (savedProfile) setProfile(JSON.parse(savedProfile) as PublicProfile);
-    } catch {
-      // A missing or malformed local profile should never block public browsing.
-    }
+    let disposed = false;
+    const timer = window.setTimeout(() => {
+      try {
+        const savedProfile = window.localStorage.getItem("emblem-hall-profile");
+        if (!disposed && savedProfile) setProfile(JSON.parse(savedProfile) as PublicProfile);
+      } catch {
+        // A missing or malformed local profile should never block public browsing.
+      }
+    }, 0);
+    return () => {
+      disposed = true;
+      window.clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -736,12 +768,20 @@ export default function DiscussionBoard() {
       const remoteTopics = await loadRemoteBoard(client, session?.user.id ?? null);
       if (cancelled) return;
       setTopics(remoteTopics);
+      setRemoteTopicPage(0);
+      setHasMoreRemoteTopics(remoteTopics.length === 20);
       setConnectionState("live");
 
       const refresh = async () => {
         try {
-          const refreshed = await loadRemoteBoard(client, session?.user.id ?? null);
-          if (!cancelled) setTopics(refreshed);
+          const currentSession = (await client.auth.getSession()).data.session;
+          const refreshed = await loadRemoteBoard(client, currentSession?.user.id ?? null);
+          if (!cancelled) {
+            setTopics(refreshed);
+            setRemoteTopicPage(0);
+            setHasMoreRemoteTopics(refreshed.length === 20);
+            setConnectionState("live");
+          }
         } catch {
           if (!cancelled) setConnectionState("demo");
         }
@@ -755,7 +795,10 @@ export default function DiscussionBoard() {
         .on("postgres_changes", { event: "*", schema: "public", table: "reactions" }, refresh)
         .subscribe((status) => {
           if (cancelled) return;
-          if (status === "SUBSCRIBED") setConnectionState("live");
+          if (status === "SUBSCRIBED") {
+            setConnectionState("live");
+            void refresh();
+          }
           if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setConnectionState("demo");
         });
     }
@@ -789,6 +832,34 @@ export default function DiscussionBoard() {
   function showNotice(message: string) {
     setNotice(message);
     window.setTimeout(() => setNotice(null), 4200);
+  }
+
+  async function loadMoreTopics() {
+    if (loadingMoreTopics) return;
+    const client = getSupabaseBrowserClient();
+    if (!client || !hasMoreRemoteTopics) {
+      setVisibleTopicCount((count) => count + 20);
+      return;
+    }
+
+    setLoadingMoreTopics(true);
+    try {
+      const session = (await client.auth.getSession()).data.session;
+      const nextPage = remoteTopicPage + 1;
+      const nextTopics = await loadRemoteBoard(client, session?.user.id ?? profile?.id ?? null, nextPage);
+      setTopics((currentTopics) => {
+        const existingIds = new Set(currentTopics.map((topic) => topic.id));
+        return [...currentTopics, ...nextTopics.filter((topic) => !existingIds.has(topic.id))];
+      });
+      setRemoteTopicPage(nextPage);
+      setHasMoreRemoteTopics(nextTopics.length === 20);
+      setVisibleTopicCount((count) => count + 20);
+    } catch {
+      setConnectionState("demo");
+      showNotice("More discussions could not be loaded. Try again when the board reconnects.");
+    } finally {
+      setLoadingMoreTopics(false);
+    }
   }
 
   function requireProfile(action: PendingAction) {
@@ -919,29 +990,19 @@ export default function DiscussionBoard() {
       ? sourceTopic?.reactions.find((reaction) => reaction.emoji === emoji)
       : sourceTopic?.replies.find((reply) => reply.id === targetId)?.reactions.find((reaction) => reaction.emoji === emoji);
     const nextActive = !(sourceReaction?.reacted ?? false);
-    setTopics((currentTopics) =>
-      currentTopics.map((topic) => {
-        if (targetType === "topic" && topic.id === targetId) {
-          const current = topic.reactions.find((reaction) => reaction.emoji === emoji);
-          return { ...topic, reactions: buildReactions(topic.reactions, emoji, !(current?.reacted ?? false)) };
-        }
-        if (targetType === "reply" && topic.replies.some((reply) => reply.id === targetId)) {
-          return {
-            ...topic,
-            replies: topic.replies.map((reply) => {
-              if (reply.id !== targetId) return reply;
-              const current = reply.reactions.find((reaction) => reaction.emoji === emoji);
-              return { ...reply, reactions: buildReactions(reply.reactions, emoji, !(current?.reacted ?? false)) };
-            }),
-          };
-        }
-        return topic;
-      }),
-    );
+    setTopics((currentTopics) => updateReactionState(currentTopics, targetType, targetId, emoji, nextActive));
     const client = getSupabaseBrowserClient();
     if (client) {
       void toggleRemoteReaction(client, activeProfile.id, targetType, targetId, emoji, nextActive).catch(() => {
         setConnectionState("demo");
+        setTopics((currentTopics) => {
+          const currentReaction = targetType === "topic"
+            ? currentTopics.find((topic) => topic.id === targetId)?.reactions.find((reaction) => reaction.emoji === emoji)
+            : currentTopics.flatMap((topic) => topic.replies).find((reply) => reply.id === targetId)?.reactions.find((reaction) => reaction.emoji === emoji);
+          return currentReaction?.reacted === nextActive
+            ? updateReactionState(currentTopics, targetType, targetId, emoji, !nextActive)
+            : currentTopics;
+        });
         showNotice("Your reaction could not reach the shared board.");
       });
     }
@@ -956,11 +1017,6 @@ export default function DiscussionBoard() {
     setEditing({ kind: "topic", id: topic.id });
     setEditDraft(topic.title);
     setEditContextDraft(topic.context ?? "");
-  }
-
-  function startReplyEdit(reply: Reply) {
-    setEditing({ kind: "reply", id: reply.id });
-    setEditDraft(reply.body);
   }
 
   function saveEdit(event: FormEvent<HTMLFormElement>) {
@@ -1141,7 +1197,7 @@ export default function DiscussionBoard() {
           ) : null}
 
           <div className="topic-feed">
-            {groupedTopics.map((group) => (
+            {groupedTopics.length ? groupedTopics.map((group) => (
               <section key={group.label} className="topic-day" aria-labelledby={`day-${group.label.replace(/\s+/g, "-").toLowerCase()}`}>
                 <div className="day-divider">
                   <h2 id={`day-${group.label.replace(/\s+/g, "-").toLowerCase()}`}>{group.label}</h2>
@@ -1176,12 +1232,19 @@ export default function DiscussionBoard() {
                   ))}
                 </div>
               </section>
-            ))}
+            )) : (
+              <div className="empty-board" role="status">
+                <div className="empty-board-mark" aria-hidden="true"><Feather size={20} /></div>
+                <h2>The hall is waiting for its first dispatch.</h2>
+                <p>Open a discussion and give the camp something to gather around.</p>
+                <Button variant="outline" onClick={() => setTopicComposerOpen(true)}><Plus size={15} /> Start a discussion</Button>
+              </div>
+            )}
           </div>
 
-          {visibleTopicCount < topics.length ? (
-            <Button variant="outline" className="load-more-button" onClick={() => setVisibleTopicCount((count) => count + 20)}>
-              Load more discussions
+          {visibleTopicCount < topics.length || hasMoreRemoteTopics ? (
+            <Button variant="outline" className="load-more-button" onClick={() => void loadMoreTopics()} disabled={loadingMoreTopics}>
+              {loadingMoreTopics ? "Loading the archive…" : "Load more discussions"}
             </Button>
           ) : (
             <div className="feed-end"><span className="feed-end-mark" aria-hidden="true">✦</span><span>You’ve reached the edge of the current archive.</span></div>

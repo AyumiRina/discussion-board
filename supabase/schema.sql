@@ -109,7 +109,7 @@ drop policy if exists "Public topics are readable" on public.topics;
 create policy "Public topics are readable"
 on public.topics for select
 to anon, authenticated
-using (deleted_at is null);
+using (true);
 
 drop policy if exists "Guests create topics" on public.topics;
 create policy "Guests create topics"
@@ -128,7 +128,7 @@ drop policy if exists "Public replies are readable" on public.replies;
 create policy "Public replies are readable"
 on public.replies for select
 to anon, authenticated
-using (deleted_at is null);
+using (true);
 
 drop policy if exists "Guests create replies" on public.replies;
 create policy "Guests create replies"

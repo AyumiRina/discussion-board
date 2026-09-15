@@ -15,7 +15,6 @@ export async function GET(request: Request, context: RouteContext) {
       .from("replies")
       .select("id, topic_id, author_id, body, created_at, updated_at, deleted_at")
       .eq("topic_id", topicId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: true })
       .range(from, from + 49);
     if (result.error) throw result.error;

@@ -1,6 +1,8 @@
-# vinext-starter
+# Emblem Hall
 
-A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
+A modern, fantasy-inspired Fire Emblem discussion board built with Next.js App Router, TypeScript, Vinext, and Supabase.
+
+Visitors can browse the daily board without an account. The first topic, reply, or reaction opens a lightweight guest profile dialog; Supabase anonymous auth keeps the guest identity stable in the current browser when configured. The demo preview intentionally falls back to local camp data until Supabase credentials are supplied.
 
 ## Prerequisites
 
@@ -8,6 +10,24 @@ A clean full-stack starter running on [vinext](https://github.com/cloudflare/vin
 - Portable: Windows, macOS, or Linux; no Bash required
 - Managed Linux: managed Linux runtime with Bash, `flock`, `curl`, `sha256sum`, and GNU `timeout`
 - Git is required only for publishing
+
+## Supabase setup
+
+1. Create a Supabase project and enable Anonymous Sign-Ins in Authentication.
+2. Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL editor. It creates the profiles, topics, replies, and reactions tables, ownership policies, reaction uniqueness constraints, soft-deletion support, and Realtime publication entries.
+3. Copy [`.env.example`](.env.example) to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+4. Start the board with `npm run dev`.
+
+The SQL migration uses `auth.uid()` for ownership checks. Keep any service-role key out of the browser and out of source control. Before a public launch, add rate limiting and CAPTCHA protection for anonymous sign-ins. Guest profiles cannot be recovered after browser storage is cleared or when a visitor changes devices.
+
+## Board behavior
+
+- Topics are newest first and grouped by the visitor’s browser timezone.
+- Replies are flat, chronological, and expand inline; long conversations expose a “Load older replies” control.
+- Topics and replies are plain text with preserved line breaks, 1–140 character titles, and 1–2,000 character context/reply limits.
+- Authors can edit or soft-delete only their own content. Removed topics and replies remain as tombstones, and removed topics reject new replies and reactions.
+- Reactions are limited to `❤️`, `🔥`, `⚔️`, `🛡️`, `✨`, and `😂` and use optimistic updates with rollback on failure.
+- Placeholder avatar keys live in `lib/discussion.ts`, so supplied artwork can replace the registry without changing profile logic.
 
 ## Sites Lifecycle
 

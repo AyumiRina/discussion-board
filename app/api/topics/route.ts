@@ -15,7 +15,6 @@ export async function GET(request: Request) {
     const result = await client
       .from("topics")
       .select("id, author_id, title, context, created_at, updated_at, deleted_at")
-      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .range(from, from + 19);
     if (result.error) throw result.error;
