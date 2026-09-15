@@ -280,6 +280,12 @@ textarea:focus-visible {
   background: rgb(255 250 240 / 70%);
 }
 
+.left-rail-profile {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 3px;
+}
+
 .rail-footer {
   display: flex;
   align-items: center;
@@ -607,7 +613,8 @@ textarea:focus-visible {
 }
 
 .topic-card {
-  overflow: hidden;
+  position: relative;
+  overflow: visible;
   border: 1px solid #ded7ca;
   border-radius: 15px;
   background: rgb(255 253 248 / 91%);
@@ -721,13 +728,16 @@ textarea:focus-visible {
 }
 
 .new-topic-badge {
-  flex: none;
-  margin-top: 3px;
-  padding: 4px 8px 3px;
-  color: #ad4938;
-  border: 1px solid #efc2a6;
+  position: absolute;
+  top: -11px;
+  right: 22px;
+  z-index: 2;
+  padding: 5px 9px 4px;
+  color: #fff;
+  border: 1px solid #a94739;
   border-radius: 999px;
-  background: #fff1e8;
+  background: #b94d3b;
+  box-shadow: 0 5px 12px rgb(146 56 46 / 18%);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1081,13 +1091,6 @@ textarea:focus-visible {
   align-content: start;
   gap: 15px;
   padding-top: 15px;
-}
-
-.right-rail-profile {
-  display: flex;
-  min-height: 33px;
-  align-items: center;
-  justify-content: flex-end;
 }
 
 .right-rail-card {
@@ -1504,7 +1507,7 @@ textarea:focus-visible {
     align-items: flex-start;
     flex-direction: column;
     gap: 5px;
-    margin-top: 28px;
+    margin-top: 41px;
   }
 
   .topic-composer {

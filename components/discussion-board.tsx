@@ -1140,7 +1140,6 @@ export default function DiscussionBoard() {
 
       <div className={`mobile-nav ${mobileMenuOpen ? "is-open" : ""}`}>
         <button type="button" className="mobile-nav-item is-active" onClick={() => setMobileMenuOpen(false)}><BookOpen size={16} /> Daily board</button>
-        <button type="button" className="mobile-nav-item" onClick={() => showNotice("The archive will grow with the hall.")}><Clock3 size={16} /> Recent dispatches</button>
       </div>
 
       <div className="board-layout">
@@ -1152,15 +1151,13 @@ export default function DiscussionBoard() {
               <span className="brand-kicker">A tavern for adventurers</span>
             </div>
           </div>
-          <nav className="rail-nav" aria-label="Board navigation">
-            <span className="rail-section-label">The hall</span>
+          <nav className="rail-nav" aria-label="Tavern navigation">
+            <span className="rail-section-label">The tavern</span>
             <button type="button" className="rail-link is-active"><BookOpen size={16} /> Daily board <span className="rail-count">{topics.length}</span></button>
-            <button type="button" className="rail-link" onClick={() => showNotice("Recent dispatches are already gathered on the daily board.")}><Clock3 size={16} /> Recent dispatches</button>
           </nav>
           <div className="rail-divider" />
-          <div className="rail-note">
-            <div className="rail-note-icon" aria-hidden="true"><Shield size={15} /></div>
-            <p>Bring a question, a theory, or one perfectly timed critical hit.</p>
+          <div className="left-rail-profile">
+            <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
           </div>
         </aside>
 
@@ -1177,7 +1174,7 @@ export default function DiscussionBoard() {
           </header>
 
           <div className="board-status-row">
-            <div className={`status-copy ${connectionState !== "live" ? "is-preview" : ""}`} title={connectionState === "live" ? "Live shared board" : connectionState === "connecting" ? "Connecting to the shared board" : "Local camp preview"}><span className="live-pulse" /> <span>The tavern</span><span className="status-dot-separator">·</span><span>{topics.length} {topics.length === 1 ? "topic" : "topics"} pinned in the board</span></div>
+            <div className={`status-copy ${connectionState !== "live" ? "is-preview" : ""}`} title={connectionState === "live" ? "Live shared board" : connectionState === "connecting" ? "Connecting to the shared board" : "Local camp preview"}><span className="live-pulse" /> <span>The tavern</span><span className="status-dot-separator">·</span><span>{topics.length} {topics.length === 1 ? "topic" : "topics"} pinned on the board</span></div>
           </div>
 
           {topicComposerOpen ? (
@@ -1247,9 +1244,6 @@ export default function DiscussionBoard() {
         </section>
 
         <aside className="right-rail">
-          <div className="right-rail-profile">
-            <ProfileMenu profile={profile} onEdit={() => setProfileDialogOpen(true)} onInfo={() => showNotice("Guest mode keeps your profile in this browser; it never asks for an email or password.")} />
-          </div>
           <div className="right-rail-card prompt-card">
             <div className="card-cardinal" aria-hidden="true"><Flame size={18} /></div>
             <p className="eyebrow">At the campfire</p>
@@ -1264,7 +1258,6 @@ export default function DiscussionBoard() {
             <div className="pulse-stat"><strong>{topics.length}</strong><span>open discussions</span></div>
             <div className="pulse-stat"><strong>{totalReplies}</strong><span>voices in the replies</span></div>
           </div>
-          <div className="right-rail-caption"><span>✦</span><p>Original fantasy-inspired interface. Placeholder crests are ready for your assets.</p></div>
         </aside>
       </div>
 
