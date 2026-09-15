@@ -1322,21 +1322,23 @@ export default function DiscussionBoard() {
 
         <aside className="right-rail">
           <div className="right-rail-card prompt-card">
-            <span className="prompt-card-watermark" aria-hidden="true"><MessageCircle size={82} fill="currentColor" strokeWidth={1.25} /></span>
+            <span className="prompt-card-watermark" aria-hidden="true"><MessageCircle size={82} fill="currentColor" stroke="none" /></span>
             <div className="card-cardinal" aria-hidden="true"><Feather size={18} /></div>
-            <p className="eyebrow">At the campfire</p>
-            <h2>Leave a little room for another voice.</h2>
-            <p>Every topic is a small opening. Ask something you’d want to answer, too.</p>
+            <p className="eyebrow">at the tavern</p>
+            <h2>Open a discussion topic</h2>
             <Button className="prompt-button new-topic-button" onClick={() => setTopicComposerOpen(true)}>
               <Feather size={15} /> Add discussion topic
             </Button>
+          </div>
+          <div className="right-rail-card personal-stats-card">
+            <div className="pulse-card-header"><span className="eyebrow">Your activity</span><MessageCircle size={16} aria-hidden="true" /></div>
+            <div className="pulse-stat"><strong>{myDiscussionCount}</strong><span>my discussions</span></div>
+            <div className="pulse-stat"><strong>{myReplyCount}</strong><span>my replies</span></div>
           </div>
           <div className="right-rail-card pulse-card">
             <div className="pulse-card-header"><span className="eyebrow">Community stats</span><Users size={16} aria-hidden="true" /></div>
             <div className="pulse-stat"><strong>{topics.length}</strong><span>open discussions</span></div>
             <div className="pulse-stat"><strong>{totalReplies}</strong><span>voices in the replies</span></div>
-            <div className="pulse-stat"><strong>{myDiscussionCount}</strong><span>my discussions</span></div>
-            <div className="pulse-stat"><strong>{myReplyCount}</strong><span>my replies</span></div>
           </div>
         </aside>
       </div>
