@@ -1,4 +1,3 @@
 {
-  "buildCommand": "npm run build:vercel",
-  "outputDirectory": ".output"
+  "buildCommand": "npm run build:vercel"
 }
