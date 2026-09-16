@@ -662,7 +662,7 @@ function TopicCard({
         <>
           <div className="topic-title-row">
             <h2 className="topic-title">{topic.title}</h2>
-            {needsReply ? <span className="new-topic-badge">New!</span> : null}
+            {!isOwner && needsReply ? <span className="new-topic-badge">New!</span> : null}
           </div>
           {topic.context ? <p className="topic-context">{topic.context}</p> : null}
         </>
@@ -765,7 +765,7 @@ export default function DiscussionBoard() {
   const [topicComposerOpen, setTopicComposerOpen] = useState(false);
   const [topicTitle, setTopicTitle] = useState("");
   const [topicContext, setTopicContext] = useState("");
-  const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
+  const [collapsedTopics, setCollapsedTopics] = useState<Set<string>>(() => new Set());
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<EditingTarget>(null);
   const [editDraft, setEditDraft] = useState("");
@@ -1002,7 +1002,6 @@ export default function DiscussionBoard() {
       reactions: EMPTY_REACTIONS.map((reaction) => ({ ...reaction })),
     };
     setTopics((currentTopics) => [topic, ...currentTopics]);
-    setExpandedTopic(topic.id);
     setTopicComposerOpen(false);
     setTopicTitle("");
     setTopicContext("");
@@ -1044,7 +1043,6 @@ export default function DiscussionBoard() {
       ),
     );
     setReplyDrafts((drafts) => ({ ...drafts, [topicId]: "" }));
-    setExpandedTopic(topicId);
     const client = getSupabaseBrowserClient();
     if (client) {
       void createRemoteReply(client, activeProfile, topicId, reply.body).catch(() => {
@@ -1158,7 +1156,14 @@ export default function DiscussionBoard() {
         void deleteRemoteReply(client, deleteTarget.id, profile.id).catch(() => setConnectionState("demo"));
       }
     }
-    if (deleteTarget.kind === "topic") setExpandedTopic(null);
+    if (deleteTarget.kind === "topic") {
+      setCollapsedTopics((current) => {
+        if (!current.has(deleteTarget.id)) return current;
+        const next = new Set(current);
+        next.delete(deleteTarget.id);
+        return next;
+      });
+    }
     setDeleteTarget(null);
     showNotice("Content removed from the board.");
   }
@@ -1277,8 +1282,13 @@ export default function DiscussionBoard() {
                       key={topic.id}
                       topic={topic}
                       currentProfile={profile}
-                      expanded={expandedTopic === topic.id}
-                      onToggleExpanded={() => setExpandedTopic((current) => current === topic.id ? null : topic.id)}
+                      expanded={!collapsedTopics.has(topic.id)}
+                      onToggleExpanded={() => setCollapsedTopics((current) => {
+                        const next = new Set(current);
+                        if (next.has(topic.id)) next.delete(topic.id);
+                        else next.add(topic.id);
+                        return next;
+                      })}
                       onToggleReaction={(emoji) => handleReaction("topic", topic.id, emoji)}
                       onSubmitReply={(event) => handleReplySubmit(topic.id, event)}
                       replyDraft={replyDrafts[topic.id] ?? ""}
