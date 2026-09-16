@@ -36,7 +36,7 @@ create table if not exists public.reactions (
   user_id uuid not null references auth.users(id) on delete cascade,
   topic_id uuid references public.topics(id) on delete restrict,
   reply_id uuid references public.replies(id) on delete restrict,
-  emoji text not null check (emoji in ('❤️', '🔥', '⚔️', '🛡️', '✨', '😂')),
+  emoji text not null check (emoji in ('❤️', '👍', '🙂', '😂', '🥺', '😔', '😭', '😡', '👎', '🔥', '⚔️', '🛡️', '✨')),
   created_at timestamptz not null default timezone('utc', now()),
   constraint reactions_one_target check ((topic_id is not null) <> (reply_id is not null))
 );
@@ -55,6 +55,12 @@ create unique index if not exists reactions_topic_user_emoji_idx
 create unique index if not exists reactions_reply_user_emoji_idx
   on public.reactions (reply_id, user_id, emoji)
   where reply_id is not null;
+
+-- Keep existing reactions readable while allowing the current reaction lineup.
+-- The legacy values can remain on older rows; the app only offers the current lineup.
+alter table public.reactions drop constraint if exists reactions_emoji_check;
+alter table public.reactions add constraint reactions_emoji_check
+  check (emoji in ('❤️', '👍', '🙂', '😂', '🥺', '😔', '😭', '😡', '👎', '🔥', '⚔️', '🛡️', '✨'));
 
 create or replace function public.set_updated_at()
 returns trigger

@@ -26,7 +26,7 @@ The SQL migration uses `auth.uid()` for ownership checks. Keep any service-role 
 - Replies are flat, chronological, and expand inline; long conversations expose a “Load older replies” control.
 - Topics and replies are plain text with preserved line breaks, 1–140 character titles, and 1–2,000 character context/reply limits.
 - Authors can edit or soft-delete only their own content. Removed topics and replies remain as tombstones, and removed topics reject new replies and reactions.
-- Reactions are limited to `❤️`, `🔥`, `⚔️`, `🛡️`, `✨`, and `😂` and use optimistic updates with rollback on failure.
+- Reactions use the curated lineup `❤️`, `👍`, `🙂`, `😂`, `🥺`, `😔`, `😭`, `😡`, and `👎` with optimistic updates and rollback on failure.
 - Placeholder avatar keys live in `lib/discussion.ts`, so supplied artwork can replace the registry without changing profile logic.
 
 ## Sites Lifecycle

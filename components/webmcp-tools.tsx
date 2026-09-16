@@ -107,7 +107,7 @@ export function useWebMcpTools(actions: BoardToolActions) {
             properties: {
               targetType: { type: "string", enum: ["topic", "reply"] },
               targetId: { type: "string" },
-              emoji: { type: "string", enum: ["❤️", "🔥", "⚔️", "🛡️", "✨", "😂"] },
+              emoji: { type: "string", enum: ["❤️", "👍", "🙂", "😂", "🥺", "😔", "😭", "😡", "👎"] },
             },
             required: ["targetType", "targetId", "emoji"],
             additionalProperties: false,
@@ -117,7 +117,7 @@ export function useWebMcpTools(actions: BoardToolActions) {
             const payload = input as { targetType?: unknown; targetId?: unknown; emoji?: unknown };
             if (payload.targetType !== "topic" && payload.targetType !== "reply") throw new Error("targetType must be topic or reply.");
             if (typeof payload.targetId !== "string" || !payload.targetId) throw new Error("A targetId is required.");
-            if (typeof payload.emoji !== "string" || !["❤️", "🔥", "⚔️", "🛡️", "✨", "😂"].includes(payload.emoji)) throw new Error("That reaction is not available.");
+            if (typeof payload.emoji !== "string" || !["❤️", "👍", "🙂", "😂", "🥺", "😔", "😭", "😡", "👎"].includes(payload.emoji)) throw new Error("That reaction is not available.");
             return actionsRef.current.toggleReaction(payload.targetType, payload.targetId, payload.emoji);
           },
         },
